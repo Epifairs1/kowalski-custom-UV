@@ -645,20 +645,18 @@ static void gpu_cc_gfx_sdm845_fixup_sdm845v2(void)
 static void gpu_cc_gfx_sdm845_fixup_sdm670(void)
 {
 	gpu_cc_gx_gfx3d_clk_src.freq_tbl =
-				ftbl_gpu_cc_gx_gfx3d_clk_src_sdm670;
-	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_MIN] = 180000000;
-	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_LOWER] =
-		267000000;
-	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_LOW] = 430000000; // ИЗМЕНЕНО (было 355)
-	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_LOW_L1] =
-		504000000; // ИЗМЕНЕНО (было 430)
-	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_NOMINAL] =
-		610000000; // ИЗМЕНЕНО (было 565)
-	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_NOMINAL_L1] =
-		650000000;
+				ftbl_gpu_cc_gx_gfx3d_clk_src_sdm670;           
+    // Сдвигаем нижние частоты на шаг вверх по напряжению
+	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_MIN] = 267000000;     // БЫЛО 180000000
+	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_LOWER] = 355000000;   // БЫЛО 267000000
+    // Высокие частоты оставляем как есть (твой текущий UV)
+	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_LOW] = 430000000;
+	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_LOW_L1] = 504000000;
+	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_NOMINAL] = 610000000;
+    // Остальное не трогаем
+	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_NOMINAL_L1] = 650000000;
 	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_HIGH] = 750000000;
-	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_HIGH_L1] =
-		780000000;
+	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_HIGH_L1] = 780000000;
 }
 
 static int gpu_cc_gfx_sdm845_fixup(struct platform_device *pdev)
