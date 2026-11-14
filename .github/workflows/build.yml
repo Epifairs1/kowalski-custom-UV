@@ -1,0 +1,47 @@
+name: Build Kowalski Custom UV
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout Kernel Source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Install Dependencies and Toolchains
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bc bison build-essential ccache clang-13 lld-13 llvm-13 gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi curl flex git libssl-dev libncurses5-dev lz4 python2 python3 unzip wget xz-utils zip zstd
+          sudo ln -sf /usr/bin/python2 /usr/bin/python
+          sudo ln -sf /usr/bin/clang-13 /usr/bin/clang
+          sudo ln -sf /usr/bin/ld.lld-13 /usr/bin/ld.lld
+
+      - name: Compile Kernel
+        run: |
+          export ARCH=arm64
+          export SUBARCH=arm64
+          
+          # На всякий случай удаляем битую ссылку на WireGuard, если она есть
+          sed -i '/source "net\/wireguard\/Kconfig"/d' net/Kconfig || true
+          
+          make O=out ARCH=arm64 kowalski_custom_defconfig
+          make -j$(nproc --all) O=out ARCH=arm64 \
+            CC=clang \
+            CLANG_TRIPLE=aarch64-linux-gnu- \
+            CROSS_COMPILE=aarch64-linux-gnu- \
+            CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
+            AR=llvm-ar-13 \
+            NM=llvm-nm-13 \
+            OBJDUMP=llvm-objdump-13 \
+            STRIP=llvm-strip-13 \
+            KCFLAGS="-Wno-error"
+            
+      - name: Upload Kernel Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kowalski-Custom-UV
+          path: out/arch/arm64/boot/Image.gz
