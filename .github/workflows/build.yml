@@ -25,14 +25,14 @@ jobs:
           export ARCH=arm64
           export SUBARCH=arm64
           
-          # Фикс WireGuard
+          # 1. Фикс WireGuard
           sed -i '/source "net\/wireguard\/Kconfig"/d' net/Kconfig || true
-          # Фикс Python (на случай если python2 не сработает)
+          # 2. Фикс Python
           sed -i 's/print >> sys.stderr, line/print(line, file=sys.stderr)/g' scripts/gcc-wrapper.py || true
           
           make O=out ARCH=arm64 kowalski_custom_defconfig
           
-          # 1. Собираем ядро
+          # 3. Сборка ядра
           make -j$(nproc --all) O=out ARCH=arm64 \
             CC=clang \
             CLANG_TRIPLE=aarch64-linux-gnu- \
@@ -45,7 +45,7 @@ jobs:
             KCFLAGS="-Wno-error" \
             Image.gz
             
-          # 2. Собираем DTB, ОБЯЗАТЕЛЬНО передавая все те же флаги компилятора
+          # 4. Сборка ТОЛЬКО нашего DTB (правильное имя!)
           make -j$(nproc --all) O=out ARCH=arm64 \
             CC=clang \
             CLANG_TRIPLE=aarch64-linux-gnu- \
@@ -56,7 +56,11 @@ jobs:
             OBJDUMP=llvm-objdump-13 \
             STRIP=llvm-strip-13 \
             KCFLAGS="-Wno-error" \
-            qcom/sdm670-grus.dtb
+            qcom/grus-sdm712.dtb
+            
+          # Выводим размеры файлов для проверки
+          ls -lh out/arch/arm64/boot/Image.gz
+          ls -lh out/arch/arm64/boot/dts/qcom/grus-sdm712.dtb
 
       - name: Upload Kernel Artifact
         uses: actions/upload-artifact@v4
@@ -64,4 +68,4 @@ jobs:
           name: Kowalski-Custom-UV
           path: |
             out/arch/arm64/boot/Image.gz
-            out/arch/arm64/boot/dts/qcom/sdm670-grus.dtb
+            out/arch/arm64/boot/dts/qcom/grus-sdm712.dtb
