@@ -655,12 +655,12 @@ static void gpu_cc_gfx_sdm845_fixup_sdm670(void)
 	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_LOW] = 430000000;
 	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_LOW_L1] = 504000000;
 	
-	// ПЛАН А: 610 МГц на NOMINAL (сток), 650 МГц на NOMINAL_L1 (разгон)
+	// ПЛАН Б: Обрезаем NOMINAL_L1 до 610, чтобы 650 ушло на HIGH
 	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_NOMINAL] = 610000000;
-	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_NOMINAL_L1] = 650000000;
+	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_NOMINAL_L1] = 610000000;
+	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_HIGH] = 650000000;
 	
 	// Остальные оставляем как есть
-	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_HIGH] = 750000000;
 	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_HIGH_L1] = 780000000;
 }
 
