@@ -19,17 +19,20 @@ jobs:
           sudo ln -sf /usr/bin/python2 /usr/bin/python
           sudo ln -sf /usr/bin/clang-13 /usr/bin/clang
           sudo ln -sf /usr/bin/ld.lld-13 /usr/bin/ld.lld
-          
+
       - name: Compile Kernel and DTB
         run: |
           export ARCH=arm64
           export SUBARCH=arm64
           
+          # Фикс WireGuard
           sed -i '/source "net\/wireguard\/Kconfig"/d' net/Kconfig || true
+          # Фикс Python (на случай если python2 не сработает)
+          sed -i 's/print >> sys.stderr, line/print(line, file=sys.stderr)/g' scripts/gcc-wrapper.py || true
           
           make O=out ARCH=arm64 kowalski_custom_defconfig
           
-          # Собираем ядро
+          # 1. Собираем ядро
           make -j$(nproc --all) O=out ARCH=arm64 \
             CC=clang \
             CLANG_TRIPLE=aarch64-linux-gnu- \
@@ -42,5 +45,23 @@ jobs:
             KCFLAGS="-Wno-error" \
             Image.gz
             
-          # Собираем ТОЛЬКО НАШ DTB, чтобы не наткнуться на чужие ошибки
-          make -j$(nproc --all) O=out ARCH=arm64 qcom/sdm670-grus.dtb
+          # 2. Собираем DTB, ОБЯЗАТЕЛЬНО передавая все те же флаги компилятора
+          make -j$(nproc --all) O=out ARCH=arm64 \
+            CC=clang \
+            CLANG_TRIPLE=aarch64-linux-gnu- \
+            CROSS_COMPILE=aarch64-linux-gnu- \
+            CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
+            AR=llvm-ar-13 \
+            NM=llvm-nm-13 \
+            OBJDUMP=llvm-objdump-13 \
+            STRIP=llvm-strip-13 \
+            KCFLAGS="-Wno-error" \
+            qcom/sdm670-grus.dtb
+
+      - name: Upload Kernel Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kowalski-Custom-UV
+          path: |
+            out/arch/arm64/boot/Image.gz
+            out/arch/arm64/boot/dts/qcom/sdm670-grus.dtb
