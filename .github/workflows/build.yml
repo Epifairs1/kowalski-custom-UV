@@ -25,18 +25,15 @@ jobs:
           export ARCH=arm64
           export SUBARCH=arm64
           
-          # Фикс WireGuard
           sed -i '/source "net\/wireguard\/Kconfig"/d' net/Kconfig || true
-          # Фикс Python
           sed -i 's/print >> sys.stderr, line/print(line, file=sys.stderr)/g' scripts/gcc-wrapper.py || true
           
-          # СТОП-КРАН ДЛЯ КАМЕРЫ (Вариант 2 из совета нейронки):
-          # Полностью обнуляем проблемный файл камеры, чтобы dtc не падал на парсинге
+          # Заглушки для битых файлов (камера и термалка)
           echo "/* stubbed out for kernel build */" > arch/arm64/boot/dts/qcom/sdm670-camera.dtsi
+          echo "/* stubbed out for kernel build */" > arch/arm64/boot/dts/qcom/sdm670-thermal.dtsi
           
           make O=out ARCH=arm64 kowalski_custom_defconfig
           
-          # 1. Собираем ядро
           make -j$(nproc --all) O=out ARCH=arm64 \
             CC=clang \
             CLANG_TRIPLE=aarch64-linux-gnu- \
@@ -49,7 +46,6 @@ jobs:
             KCFLAGS="-Wno-error" \
             Image.gz
             
-          # 2. Собираем ТОЛЬКО НАШ DTB
           make -j$(nproc --all) O=out ARCH=arm64 \
             CC=clang \
             CLANG_TRIPLE=aarch64-linux-gnu- \
@@ -61,7 +57,7 @@ jobs:
             STRIP=llvm-strip-13 \
             KCFLAGS="-Wno-error" \
             qcom/grus-sdm712.dtb
-
+            
       - name: Upload Kernel Artifact
         uses: actions/upload-artifact@v4
         with:
