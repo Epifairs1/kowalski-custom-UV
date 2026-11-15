@@ -29,10 +29,12 @@ jobs:
           sed -i '/source "net\/wireguard\/Kconfig"/d' net/Kconfig || true
           # 2. Фикс Python
           sed -i 's/print >> sys.stderr, line/print(line, file=sys.stderr)/g' scripts/gcc-wrapper.py || true
+          # 3. ОБХОД ОШИБКИ КАМЕРЫ: комментируем включение проблемного файла
+          sed -i 's|#include "sdm670-camera.dtsi"|// #include "sdm670-camera.dtsi"|' arch/arm64/boot/dts/qcom/sdm670.dtsi || true
           
           make O=out ARCH=arm64 kowalski_custom_defconfig
           
-          # 3. Сборка ядра
+          # 4. Сборка ядра
           make -j$(nproc --all) O=out ARCH=arm64 \
             CC=clang \
             CLANG_TRIPLE=aarch64-linux-gnu- \
@@ -45,7 +47,7 @@ jobs:
             KCFLAGS="-Wno-error" \
             Image.gz
             
-          # 4. Сборка ТОЛЬКО нашего DTB (правильное имя!)
+          # 5. Сборка ТОЛЬКО нашего DTB
           make -j$(nproc --all) O=out ARCH=arm64 \
             CC=clang \
             CLANG_TRIPLE=aarch64-linux-gnu- \
@@ -57,10 +59,6 @@ jobs:
             STRIP=llvm-strip-13 \
             KCFLAGS="-Wno-error" \
             qcom/grus-sdm712.dtb
-            
-          # Выводим размеры файлов для проверки
-          ls -lh out/arch/arm64/boot/Image.gz
-          ls -lh out/arch/arm64/boot/dts/qcom/grus-sdm712.dtb
 
       - name: Upload Kernel Artifact
         uses: actions/upload-artifact@v4
