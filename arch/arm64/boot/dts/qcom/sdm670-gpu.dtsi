@@ -594,13 +594,13 @@
 
 				qcom,speed-bin = <128>;
 
-				qcom,initial-pwrlevel = <5>; // Оставляем стоковый индекс
-				qcom,ca-target-pwrlevel = <3>; // Оставляем стоковый индекс
+				qcom,initial-pwrlevel = <5>;
+				qcom,ca-target-pwrlevel = <3>;
 
-				/* NOM_L1 (Наш тестовый 616) */
+				/* NOM_L1 (Наш разгон 650) */
 				qcom,gpu-pwrlevel@0 {
 					reg = <0>;
-					qcom,gpu-freq = <616000000>; // <--- ТОЛЬКО 616!
+					qcom,gpu-freq = <650000000>;
 					qcom,bus-freq = <11>;
 					qcom,bus-min = <10>;
 					qcom,bus-max = <11>;
