@@ -647,18 +647,19 @@ static void gpu_cc_gfx_sdm845_fixup_sdm670(void)
 {
 	gpu_cc_gx_gfx3d_clk_src.freq_tbl =
 				ftbl_gpu_cc_gx_gfx3d_clk_src_sdm670;
-	// Сдвигаем нижние частоты на шаг вверх по напряжению (UV)
+				
+	// Андервольт нижних частот
 	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_MIN] = 267000000;
 	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_LOWER] = 355000000;
-	
-	// Высокие частоты UV
 	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_LOW] = 430000000;
 	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_LOW_L1] = 504000000;
 	
-	// Разрешаем 620 МГц на NOMINAL_L1
-	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_NOMINAL] = 610000000;
-	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_NOMINAL_L1] = 620000000;
-	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_HIGH] = 650000000;
+	// ПЛАН: 620 МГц на стоковом напряжении NOMINAL
+	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_NOMINAL] = 620000000;
+	
+	// Верхние корнеры возвращаем к стоку, чтобы не мешали
+	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_NOMINAL_L1] = 650000000;
+	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_HIGH] = 750000000;
 	gpu_cc_gx_gfx3d_clk_src.clkr.hw.init->rate_max[VDD_GX_HIGH_L1] = 780000000;
 }
 
