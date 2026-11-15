@@ -20,16 +20,19 @@ jobs:
           sudo ln -sf /usr/bin/clang-13 /usr/bin/clang
           sudo ln -sf /usr/bin/ld.lld-13 /usr/bin/ld.lld
 
-      - name: Compile Kernel
+      - name: Compile Kernel and DTB
         run: |
           export ARCH=arm64
           export SUBARCH=arm64
           
+          # Фикс WireGuard
           sed -i '/source "net\/wireguard\/Kconfig"/d' net/Kconfig || true
+          # Фикс Python
           sed -i 's/print >> sys.stderr, line/print(line, file=sys.stderr)/g' scripts/gcc-wrapper.py || true
           
           make O=out ARCH=arm64 kowalski_custom_defconfig
           
+          # 1. Собираем ядро
           make -j$(nproc --all) O=out ARCH=arm64 \
             CC=clang \
             CLANG_TRIPLE=aarch64-linux-gnu- \
@@ -42,6 +45,19 @@ jobs:
             KCFLAGS="-Wno-error" \
             Image.gz
             
+          # 2. Собираем ТОЛЬКО НАШ DTB (с теми же флагами, чтобы не было ошибки gcc)
+          make -j$(nproc --all) O=out ARCH=arm64 \
+            CC=clang \
+            CLANG_TRIPLE=aarch64-linux-gnu- \
+            CROSS_COMPILE=aarch64-linux-gnu- \
+            CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
+            AR=llvm-ar-13 \
+            NM=llvm-nm-13 \
+            OBJDUMP=llvm-objdump-13 \
+            STRIP=llvm-strip-13 \
+            KCFLAGS="-Wno-error" \
+            qcom/grus-sdm712.dtb
+
       - name: Upload Kernel Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -49,4 +65,3 @@ jobs:
           path: |
             out/arch/arm64/boot/Image.gz
             out/arch/arm64/boot/dts/qcom/grus-sdm712.dtb
-            
