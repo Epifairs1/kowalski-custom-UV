@@ -15,10 +15,11 @@ jobs:
       - name: Install Dependencies and Toolchains
         run: |
           sudo apt-get update
-          sudo apt-get install -y bc bison build-essential ccache clang-13 lld-13 llvm-13 gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi curl flex git libssl-dev libncurses5-dev lz4 python3 python-is-python3 unzip wget xz-utils zip zstd
+          sudo apt-get install -y bc bison build-essential ccache clang-13 lld-13 llvm-13 gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi curl flex git libssl-dev libncurses5-dev lz4 python2 python3 unzip wget xz-utils zip zstd
+          sudo ln -sf /usr/bin/python2 /usr/bin/python
           sudo ln -sf /usr/bin/clang-13 /usr/bin/clang
           sudo ln -sf /usr/bin/ld.lld-13 /usr/bin/ld.lld
-
+          
       - name: Compile Kernel and DTB
         run: |
           export ARCH=arm64
