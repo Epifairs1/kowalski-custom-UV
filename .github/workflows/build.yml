@@ -46,4 +46,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Kowalski-Custom-UV
-          path: out/arch/arm64/boot/Image.gz
+          path: |
+            out/arch/arm64/boot/Image.gz
+            out/arch/arm64/boot/dts/qcom/grus-sdm712.dtb
+            
