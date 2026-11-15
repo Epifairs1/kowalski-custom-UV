@@ -25,10 +25,11 @@ jobs:
           export ARCH=arm64
           export SUBARCH=arm64
           
-          # На всякий случай удаляем битую ссылку на WireGuard, если она есть
           sed -i '/source "net\/wireguard\/Kconfig"/d' net/Kconfig || true
           
           make O=out ARCH=arm64 kowalski_custom_defconfig
+          
+          # Собираем ядро
           make -j$(nproc --all) O=out ARCH=arm64 \
             CC=clang \
             CLANG_TRIPLE=aarch64-linux-gnu- \
@@ -40,8 +41,13 @@ jobs:
             STRIP=llvm-strip-13 \
             KCFLAGS="-Wno-error"
             
+          # Собираем DTB отдельной командой, чтобы не падало на чужих файлах
+          make -j$(nproc --all) O=out ARCH=arm64 sdm670-grus.dtb
+            
       - name: Upload Kernel Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Kowalski-Custom-UV
-          path: out/arch/arm64/boot/Image.gz
+          path: |
+            out/arch/arm64/boot/Image.gz
+            out/arch/arm64/boot/dts/qcom/sdm670-grus.dtb
