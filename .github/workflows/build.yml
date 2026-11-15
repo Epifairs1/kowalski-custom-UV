@@ -20,17 +20,13 @@ jobs:
           sudo ln -sf /usr/bin/clang-13 /usr/bin/clang
           sudo ln -sf /usr/bin/ld.lld-13 /usr/bin/ld.lld
 
-      - name: Compile Kernel and DTB
+      - name: Compile Kernel
         run: |
           export ARCH=arm64
           export SUBARCH=arm64
           
           sed -i '/source "net\/wireguard\/Kconfig"/d' net/Kconfig || true
           sed -i 's/print >> sys.stderr, line/print(line, file=sys.stderr)/g' scripts/gcc-wrapper.py || true
-          
-          # Заглушки для битых файлов (камера и термалка)
-          echo "/* stubbed out for kernel build */" > arch/arm64/boot/dts/qcom/sdm670-camera.dtsi
-          echo "/* stubbed out for kernel build */" > arch/arm64/boot/dts/qcom/sdm670-thermal.dtsi
           
           make O=out ARCH=arm64 kowalski_custom_defconfig
           
@@ -46,22 +42,8 @@ jobs:
             KCFLAGS="-Wno-error" \
             Image.gz
             
-          make -j$(nproc --all) O=out ARCH=arm64 \
-            CC=clang \
-            CLANG_TRIPLE=aarch64-linux-gnu- \
-            CROSS_COMPILE=aarch64-linux-gnu- \
-            CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
-            AR=llvm-ar-13 \
-            NM=llvm-nm-13 \
-            OBJDUMP=llvm-objdump-13 \
-            STRIP=llvm-strip-13 \
-            KCFLAGS="-Wno-error" \
-            qcom/grus-sdm712.dtb
-            
       - name: Upload Kernel Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Kowalski-Custom-UV
-          path: |
-            out/arch/arm64/boot/Image.gz
-            out/arch/arm64/boot/dts/qcom/grus-sdm712.dtb
+          path: out/arch/arm64/boot/Image.gz
