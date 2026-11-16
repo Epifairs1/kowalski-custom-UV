@@ -1104,6 +1104,17 @@ static int clk_osm_read_lut(struct platform_device *pdev, struct clk_osm *c)
 					((data & GENMASK(21, 16)) >> 16);
 		c->osm_table[i].open_loop_volt = (data & GENMASK(11, 0));
 
+		/* Андервольт CPU */
+		if (c->osm_table[i].open_loop_volt > 500) {
+			if (c->cluster_num == 1) {
+				c->osm_table[i].open_loop_volt -= 35; // Silver: -35 мВ
+			} else if (c->cluster_num == 2) {
+				c->osm_table[i].open_loop_volt -= 50; // Gold: -50 мВ
+			}
+			data = (data & ~GENMASK(11, 0)) | (c->osm_table[i].open_loop_volt & GENMASK(11, 0));
+			clk_osm_write_reg(c, data, VOLT_REG + i * OSM_REG_SIZE);
+		}
+
 		pr_debug("index=%d freq=%ld virtual_corner=%d open_loop_voltage=%u\n",
 			 i, c->osm_table[i].frequency,
 			 c->osm_table[i].virtual_corner,
